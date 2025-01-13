@@ -5,6 +5,7 @@ on:
   schedule:
     - cron: '0 10 * * *'
   pull_request:
+  push:
 
 permissions:
   contents: read
@@ -36,23 +37,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python Testing Deps
-        run: |
-          set -eux -o pipefail
-
-          # Upgrade pip to be able to read the requirements.txt
-          sudo python3 -m pip install --upgrade pip
-
-          # tox required for running the unit tests with coverage:
-          sudo python3 -m pip install tox
-
-          # Required by TICSQServer:
-          sudo python3 -m pip install pylint flake8
-
-          # Must pre-install dependencies for TICSQServer:
-          sudo python3 -m pip install -r $GITHUB_WORKSPACE/charms/worker/k8s/requirements.txt
-          sudo python3 -m pip install -r $GITHUB_WORKSPACE/test_requirements.txt
-
       - name: Install Go for Cobertura Coverage Converter
         uses: actions/setup-go@v5
         with:
@@ -61,6 +45,9 @@ jobs:
       - name: Run Tests With Coverage
         run: |
           set -eux -o pipefail
+
+          # tox required for running the unit tests with coverage:
+          pip install tox
 
           pushd $GITHUB_WORKSPACE
           tox -e unit,coverage-xml
