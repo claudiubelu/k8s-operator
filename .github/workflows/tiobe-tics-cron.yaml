@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
+  pull_request:
 
 permissions:
   contents: read
@@ -74,9 +75,9 @@ jobs:
       - name: Run TiCS
         run: |
           # NOTE(aznashwan): TiCS install script doesn't define defaults; cannot '-u'
-          set -ex -o pipefail
-
           export TICSAUTHTOKEN=${{ secrets.TICSAUTHTOKEN }}
+
+          set -ex -o pipefail
 
           # Install the TiCS and staticcheck
           go install honnef.co/go/tools/cmd/staticcheck@v0.5.1
