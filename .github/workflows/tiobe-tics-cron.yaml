@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
+  pull_request:
 
 permissions:
   contents: read
@@ -44,7 +45,8 @@ jobs:
           set -eux -o pipefail
 
           # tox required for running the unit tests with coverage:
-          pip install tox
+          # pylint and flake8 are required by TICSQServer
+          pip install tox pylint flake8
           tox -e unit,coverage-xml
 
           # TiCS expects the report to be under a "$(pwd)/cover" directory.
@@ -63,4 +65,7 @@ jobs:
           go install honnef.co/go/tools/cmd/staticcheck@v0.5.1
           . <(curl --silent --show-error 'https://canonical.tiobe.com/tiobeweb/TICS/api/public/v1/fapi/installtics/Script?cfg=default&platform=linux&url=https://canonical.tiobe.com/tiobeweb/TICS/')
 
+          # TICSQServer will run pylint, and pylint will need the packages to be installed.
+          # Avoid reinstalling all the packages by reusing the tox env.
+          . .tox/unit/bin/activate
           TICSQServer -project k8s-operator -tmpdir /tmp/tics -branchdir "$GITHUB_WORKSPACE"
